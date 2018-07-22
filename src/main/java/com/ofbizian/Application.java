@@ -32,8 +32,9 @@ import org.springframework.context.annotation.Configuration;
 @SpringBootApplication
 @Configuration
 @PropertySources(value = {
-        @PropertySource(value = "classpath:application.properties"),
-        @PropertySource(value = "file:/deployments/config/application.properties", ignoreResourceNotFound = true) })
+        @PropertySource(value = "classpath:application.properties")
+        ,@PropertySource(value = "file:/deployments/config/application.properties", ignoreResourceNotFound = true) }
+        )
 public class Application extends RouteBuilder {
 
     @Value("${host.name}")

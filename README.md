@@ -26,6 +26,7 @@ Tell Spring Boot Application.java to look for optional application.properties un
         @Value("${host.name}")
         private String hostName;
         
+In reality, the second PropertySource is not necessary, as by convention Spring will override embdedded in the jar properties with properties in a config folder. If we mount our configmap under config folder of the JVM working parth (/deployment) that is enough.
 
 Tell OpenShift to mount volume 'volume-demo' under /deployments/config/.
 Tell OpenShift the volume 'volume-demo' comes from ConfigMap named 'demo'.
@@ -40,14 +41,15 @@ Tell OpenShift the volume 'volume-demo' comes from ConfigMap named 'demo'.
             name: demo
           name: volume-demo
 
-### Building
-
-    mvn clean install -s configuration/settings.xml
 
 ### Create ConfigMap
 Create a ConfigMap with name 'demo' and application.properties as its content (Notice there is application.properties in resources that has the default values of the app, application.properties at top level which represents environment specific properties). When the ConfigMap is present in a namespace, it will be mounted as volume and override the default value from application.properties embedded in the jar file.
 
     oc create configmap demo --from-file=application.properties
+
+### Building
+
+    mvn clean install -s configuration/settings.xml
 
 ### Deploying in OpenShift
 It is assumed that OpenShift platform is already running and your system is configured for Fabric8 Maven Workflow.
@@ -57,10 +59,10 @@ It is assumed that OpenShift platform is already running and your system is conf
 ### Check Configurations are overridden
 Check ConfigMap is mounted as a folder:
 
-    oc rsh $(oc get pods -l app=spring-boot-configmap --template '{{range .items}}{{.metadata.name}}{{end}}') cat /etc/deployments/application.properties | grep host.name
+    oc rsh $(oc get pods -l app=spring-boot-configmap --template '{{range .items}}{{.metadata.name}}{{end}}') cat /deployments/config/application.properties | grep host.name
 
 Check Springs picks the environment specific values and uses them:
 
-    oc logs $(oc get pods -l app=spring-boot-configmap --template '{{range .items}}{{.metadata.name}}{{end}}') | grep host.name
+    oc logs $(oc get pods -l app=spring-boot-configmap --template '{{range .items}}{{.metadata.name}}{{end}}')
 
 The value should not be the embeded value (default_value) but the overriden value: env_specific_value
